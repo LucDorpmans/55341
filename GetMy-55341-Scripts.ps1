@@ -9,7 +9,6 @@ $url = "https://github.com/LucDorpmans/$MyRepo/archive/refs/heads/main.zip"
 $outFile = "$env:USERPROFILE\Downloads\$MyRepo.zip"
 
 Invoke-WebRequest -uri $url -OutFile $OutFile
-# (new-object Net.WebClient).DownloadFile($url, $outFile)
 Expand-Archive "$env:USERPROFILE\Downloads\$MyRepo.zip" -DestinationPath C:\ -Force
 
 
