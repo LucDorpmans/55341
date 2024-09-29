@@ -1,0 +1,8 @@
+# Download My GitHub Scripts:
+
+# Commands to get my scripts from my GitHub repo:
+$MyRepo = "LD-55341-Repo"
+$MyScript = "GetMy-Scripts.ps1"
+Invoke-Webrequest -Uri "https://raw.githubusercontent.com/LucDorpmans/$MyRepo/main/$MyScript"  -Outfile "$env:USERPROFILE\Downloads\$MyScript"
+PSEdit  ("$env:USERPROFILE\Downloads\$MyScript")
+
