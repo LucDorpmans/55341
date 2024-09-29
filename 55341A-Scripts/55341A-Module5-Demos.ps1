@@ -2,13 +2,13 @@
 # Demo: Install Hyper-V
 Install-WindowsFeature -Name Hyper-V -IncludeAllSubFeature -IncludeManagementTools -Restart
 
-# Use Explorer to create folder 'E:\20740C\LON-GUEST1' 
-New-Item 'E:\20740C\LON-GUEST1' -ItemType Directory -Force 
+# Use Explorer to create folder 'D:\VMs\LON-GUEST1' 
+New-Item 'D:\VMs\LON-GUEST1' -ItemType Directory -Force 
 
-# New-VHD "E:\20740C\LON-GUEST1\LON-GUEST1.vhd" -ParentPath "E:\Base\Base17C-WS16-1607.vhd" 
-New-VHD "E:\20740C\LON-GUEST1\LON-GUEST1.vhd" `
-    -ParentPath "F:\Base\Base17C-WS16-1607.vhd"
-Get-ChildItem 'E:\20740C\LON-GUEST1\' -Recurse
+# New-VHD "D:\VMs\LON-GUEST1\LON-GUEST1.vhd" -ParentPath "E:\Base\Base17C-WS16-1607.vhd" 
+New-VHD "D:\VMs\LON-GUEST1\LON-GUEST1.vhd" `
+    -ParentPath "D:\Server2022Base.vhd"
+Get-ChildItem 'D:\VMs\LON-GUEST1\' -Recurse
 
 # Demonstration Steps (GUI)
 
@@ -35,25 +35,27 @@ New-VM –Name LON-GUEST1 –MemoryStartupBytes 1024MB –VHDPath 'E:\20740\LON-
 # Use PowerShell to create LON-Guest 1:
 New-VM –Name LON-GUEST1 `
     –MemoryStartupBytes 1024MB `
-    –VHDPath 'E:\20740C\LON-GUEST1\LON-GUEST1.vhd' `
+    –VHDPath 'D:\VMs\LON-GUEST1\LON-GUEST1.vhd' `
     –SwitchName "Private Network" `
     -Generation 1
-Get-VM LON-Guest1 | Set-VM -AutomaticStartAction Nothing -AutomaticStopAction ShutDown
+Get-VM LON-Guest1 | Set-VM -AutomaticStartAction Nothing -AutomaticStopAction ShutDown -ProcessorCount 4
 
 # Use Explorer to create folder 'E:\20740\LON-GUEST2' 
-New-Item 'E:\20740C\LON-GUEST2' -ItemType Directory -Force 
+New-Item 'D:\VMs\LON-GUEST2' -ItemType Directory -Force 
 
-# New-VHD "E:\20740C\LON-GUEST1\LON-GUEST2.vhd" -ParentPath "E:\Base\Base17C-WS16-1607.vhd" 
-New-VHD "E:\20740C\LON-GUEST2\LON-GUEST2.vhdx" -SizeBytes 48GB
-Get-ChildItem 'E:\20740C' -Recurse
+# New-VHD "D:\VMs\LON-GUEST1\LON-GUEST2.vhd" -ParentPath "E:\Base\Base17C-WS16-1607.vhd" 
+New-VHD "D:\VMs\LON-GUEST2\LON-GUEST2.vhdx" -SizeBytes 48GB
+Get-ChildItem 'D:\VMs' -Recurse
 
 # Use PowerShell to create LON-Guest 2:
-New-VM –Name LON-GUEST2 –MemoryStartupBytes 1024MB –VHDPath 'E:\20740C\LON-GUEST2\LON-GUEST2.vhdx' –SwitchName "Private Network" -Generation 2
-Get-VM LON-Guest2 | Set-VM -AutomaticStartAction Nothing -AutomaticStopAction ShutDown
+New-VM –Name LON-GUEST2 –MemoryStartupBytes 1024MB –VHDPath 'D:\VMs\LON-GUEST2\LON-GUEST2.vhdx' –SwitchName "Private Network" -Generation 2
+Get-VM LON-Guest2 | Set-VM -AutomaticStartAction Nothing -AutomaticStopAction ShutDown -ProcessorCount 4
+Set-VMProcessor LON-GUEST2 -EnableHostResourceProtection $true
 
 Add-VMDvdDrive -VMName LON-Guest2 -ControllerNumber 0 -ControllerLocation 2
-Set-VMDvdDrive -VMName LON-Guest2 -ControllerNumber 0 -ControllerLocation 2 -Path "E:\Program Files\Microsoft Learning\20740\Drives\WinServer2016_1607.iso"
-# -ToControllerNumber 0 -ToControllerLocation 1 -Path "E:\Program Files\Microsoft Learning\20740\Drives\WinServer2016_1607.iso"
+Set-VMDvdDrive -VMName LON-Guest2 -ControllerNumber 0 -ControllerLocation 2 -Path "D:\Server2022Eval.iso"
+$VMDVDDrive = Get-VMDvdDrive  -VMName LON-Guest2  
+Set-VMFirmware -VMName LON-Guest2  -FirstBootDevice $VMDVDDrive
 
 <#
 Demonstration Steps
