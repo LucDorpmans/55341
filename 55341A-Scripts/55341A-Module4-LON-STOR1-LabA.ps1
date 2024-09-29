@@ -47,7 +47,7 @@ Get-StoragePool –FriendlyName TieredStoragePool | Get-PhysicalDisk | Select Fr
 # Task 4: Specify the media type for the sample disks and verify that the media type is changed
 # To configure the media types, on LON-SVR1, in Windows PowerShell, run the following commands:
 Set-PhysicalDisk –FriendlyName PhysicalDisk1 –MediaType SSD 
-Set-PhysicalDisk –FriendlyName PhysicalDisk2 –MediaType HDD 
+Set-PhysicalDisk –FriendlyName PhysicalDisk0 –MediaType HDD 
 
 # To verify the media types, run the following command:
 Get-PhysicalDisk | Select FriendlyName, Mediatype, Usage, BusType 
