@@ -1,0 +1,1 @@
+﻿Install-WindowsFeature Failover-Clustering -IncludeManagementTools -IncludeAllSubFeature
