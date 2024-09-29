@@ -4,5 +4,14 @@ Function Get-MyScript { Param( [string]$AScript,[switch]$EditFile = $False,
 			Invoke-Webrequest -Uri "https://raw.githubusercontent.com/LucDorpmans/My-Base-Repo/main/$AScript"  -Outfile "$SPath$AScript" 
 If ($EditFile) { PSEdit ("$SPath$AScript" )} }
 
-Invoke-WebRequest -uri "https://github.com/LucDorpmans/$MyRepo/archive/refs/heads/main.zip" -OutFile "$env:USERPROFILE\Downloads\$MyRepo.zip"
+$ProgressPreference = 'SilentlyContinue'
+$url = "https://github.com/LucDorpmans/$MyRepo/archive/refs/heads/main.zip" 
+$outFile = "$env:USERPROFILE\Downloads\$MyRepo.zip"
+
+Invoke-WebRequest -uri $url -OutFile $OutFile
+# (new-object Net.WebClient).DownloadFile($url, $outFile)
 Expand-Archive "$env:USERPROFILE\Downloads\$MyRepo.zip" -DestinationPath C:\ -Force
+
+
+
+
