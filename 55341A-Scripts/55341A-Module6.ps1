@@ -1,4 +1,4 @@
-﻿# On LON-NVHOST2, open Windows PowerShell.
+﻿# On LON-HOST2, open Windows PowerShell.
 # In the Windows PowerShell command prompt, type the following to install the NuGet provider:
 Install-PackageProvider –Name NuGet –Force 
 
