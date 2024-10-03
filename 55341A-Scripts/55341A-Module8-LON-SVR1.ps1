@@ -1,49 +1,72 @@
-﻿#Module 3 - LON-DC1
+﻿# Module 8 - LON-SVR2
+Install-WindowsFeature Failover-Clustering -IncludeManagementTools -IncludeAllSubFeature
 
-# Use the following Windows PowerShell cmdlets to manage the iSCSI Target Server:
-# Install the iSCSI Target Server feature:
-Install-WindowsFeature FS-iSCSITarget-Server 
+# Demo Connect to the iSCSI target
 
-#Create two iSCSI virtual disks and an iSCSI target
-New-IscsiVirtualDisk C:\iSCSIVirtualDisks\iSCSIDisk1.vhdx –size 5GB 
-New-IscsiVirtualDisk C:\iSCSIVirtualDisks\iSCSIDisk2.vhdx –size 6GB 
-New-IscsiVirtualDisk C:\iSCSIVirtualDisks\iSCSIDisk3.vhdx –size 7GB 
+# You could use the following Windows PowerShell cmdlets to manage your iSCSI initiator:
+Get-NetFirewallServiceFilter -Service msiscsi | Get-NetFirewallRule | Select DisplayGroup,DisplayName,Enabled
 
-New-IscsiServerTarget -TargetName lon-svr1 –InitiatorIds "IPAddress:172.16.0.22","IPAddress:172.16.0.23","IPAddress:172.16.0.24"
-Get-IscsiServerTarget | Select-Object TargetName, InitiatorIds
-Get-IscsiServerTarget | Select-Object -ExpandProperty InitiatorIds
-Remove-IscsiServerTarget -TargetName lon-svr1 
+Start-Service msiscsi 
+Set-Service msiscsi –StartupType “Automatic” 
+New-IscsiTargetPortal –TargetPortalAddress 172.16.0.201 # LON-STOR1
 
-New-IscsiServerTarget -TargetName lon-svr1 `
-    –InitiatorIds @( "Iqn:iqn.1991-05.com.microsoft:lon-svr2.adatum.com", 
-                     "Iqn:iqn.1991-05.com.microsoft:lon-svr3.adatum.com" )
+Connect-IscsiTarget –NodeAddress "iqn.1991-05.com.microsoft:lon-stor1-lon-svr-vms-target"
 
-Add-IscsiVirtualDiskTargetMapping -TargetName lon-svr1 C:\iSCSIVirtualDisks\iSCSIDisk1.vhdx
-Add-IscsiVirtualDiskTargetMapping -TargetName lon-svr1 C:\iSCSIVirtualDisks\iSCSIDisk2.vhdx
-Add-IscsiVirtualDiskTargetMapping -TargetName lon-svr1 C:\iSCSIVirtualDisks\iSCSIDisk3.vhdx
+Get-Disk | Select DiskNumber, FriendlyName, PartitionStyle, Model, BusType, Size, OperationalStatus | ft
+$iSCSIDisks = Get-Disk | Where-Object {  $_.BusType -eq "iSCSI" } 
+ForEach ( $iSCSIDisk in $iSCSIDisks ) {
+    $DiskNum = $iSCSIDisk.Number
+    #Get-Disk -Number $DiskNum | Set-Disk -IsOffline $False
+    # Get-Disk -Number $DiskNum | Initialize-Disk
+    # Get-Disk -Number $DiskNum | New-Partition -UseMaximumSize
+     Get-Disk -Number $DiskNum | Get-Partition | Format-Volume -FileSystem NTFS
 
-# To add iSNS Initiator(s) to an iSCSI Target:
-Get-IscsiServerTarget -TargetName LON-Svr1 | Set-IscsiServerTarget -InitiatorIds "Iqn:iqn.1991-05.com.microsoft:lon-svr3.adatum.com"
-Get-IscsiServerTarget -TargetName LON-Svr1 | Set-IscsiServerTarget `
-    –InitiatorIds @( "Iqn:iqn.1991-05.com.microsoft:lon-svr2.adatum.com", 
-                     "Iqn:iqn.1991-05.com.microsoft:lon-svr3.adatum.com",
-                     "Iqn:iqn.1991-05.com.microsoft:lon-svr4.adatum.com" )
+}
 
+# $iSCSIDisks = Get-Disk | Where-Object {  $_.BusType -eq "iSCSI" } | Clear-Disk
 
-New-Item -ItemType Directory C:\FSW
-New-SMBShare -Name FSW `
-    -Path C:\FSW `
-    -FolderEnumerationMode AccessBased `
-    -FullAccess "Everyone"
+Test-Cluster -Node LON-SVR1, LON-SVR2
+# C:\Users\Administrator.ADATUM\AppData\Local\Temp\Validation Report xxx.htm
+
+New-Cluster -Name Cluster1 -Node LON-SVR2, LON-SVR3 -StaticAddress 172.16.0.125 
+    
+# Remove-Cluster -Cluster Cluster1 -Force
 
 
-Install-WindowsFeature -Name RSAT-Clustering
+Add-ClusterFileServerRole -Storage 'Cluster Disk 2' `
+    -StaticAddress 172.16.0.130 `
+    -Name AdatumFS `
+    -Cluster Cluster1
 
-# Lab B: Demo Storage Replica
-New-Item -ItemType Directory -Path C:\Temp
+# !
+# Set Drive Letter with Failover Cluster Manager...
+# !
 
-Install-WindowsFeature Storage-Replica
+New-Item -ItemType Directory F:\Shares\Docs
+New-SMBShare -Name Docs -Path F:\Shares\Docs -FullAccess "EVERYONE"
 
-Restart-Computer
+Get-SmbShare
+Get-SmbShare Docs | FL *
 
-Test-SRTopology
+Get-ClusterNode | Select Name, NodeWeight, ID, State
+Get-ClusterQuorum | select Cluster, QuorumResource, QuorumType
+
+Add-ClusterNode -Name LON-SVR4 
+
+Get-ClusterNode | Select Name, NodeWeight, ID, State
+
+Remove-ClusterNode -Name LON-SVR4
+
+Get-ClusterQuorum | Select Cluster, QuorumResource, QuorumType
+
+# Create folder and share it on LON-DC1
+Set-ClusterQuorum -NodeAndFileShareMajority "\\LON-SVR1\FSW"
+
+# Demo: Set Cluster threshold
+Get-Cluster | Format-List *subnet*
+(Get-Cluster).SameSubnetThreshold=20
+
+# Demo ClusterLog: 
+Get-ClusterLog
+PSEdit C:\Windows\Cluster\Reports\Cluster.log
+
