@@ -8,9 +8,9 @@ Get-NetFirewallServiceFilter -Service msiscsi | Get-NetFirewallRule | Select Dis
 
 Start-Service msiscsi 
 Set-Service msiscsi –StartupType “Automatic” 
-New-IscsiTargetPortal –TargetPortalAddress LON-SVR1
+New-IscsiTargetPortal –TargetPortalAddress LON-STOR1
 
-Connect-IscsiTarget –NodeAddress "iqn.1991-05.com.microsoft:lon-svr1-lon-svr1-target"
+Connect-IscsiTarget –NodeAddress "iqn.1991-05.com.microsoft:lon-stor1-lon-svr-vms-target"
 
 Get-Disk | Select DiskNumber, FriendlyName, PartitionStyle, Model, BusType, Size, OperationalStatus | ft
 $iSCSIDisks = Get-Disk | Where-Object {  $_.BusType -eq "iSCSI" } 
@@ -25,10 +25,10 @@ ForEach ( $iSCSIDisk in $iSCSIDisks ) {
 
 # $iSCSIDisks = Get-Disk | Where-Object {  $_.BusType -eq "iSCSI" } | Clear-Disk
 
-Test-Cluster -Node LON-SVR2, LON-SVR3 
+Test-Cluster -Node LON-SVR1, LON-SVR2
 # C:\Users\Administrator.ADATUM\AppData\Local\Temp\Validation Report xxx.htm
 
-New-Cluster -Name Cluster1 -Node LON-SVR2, LON-SVR3 -StaticAddress 172.16.0.125 
+New-Cluster -Name Cluster1 -Node LON-SVR1, LON-SVR2 -StaticAddress 172.16.0.125 
     
 # Remove-Cluster -Cluster Cluster1 -Force
 

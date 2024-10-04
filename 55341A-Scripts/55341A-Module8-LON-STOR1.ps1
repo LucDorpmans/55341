@@ -10,25 +10,25 @@ New-IscsiVirtualDisk E:\iSCSIVirtualDisks\iSCSIDisk1.vhdx –size 5GB
 New-IscsiVirtualDisk E:\iSCSIVirtualDisks\iSCSIDisk2.vhdx –size 6GB 
 New-IscsiVirtualDisk E:\iSCSIVirtualDisks\iSCSIDisk3.vhdx –size 7GB 
 
-New-IscsiServerTarget -TargetName lon-svr1 –InitiatorIds "IPAddress:172.16.0.21","IPAddress:172.16.0.22" # ,"IPAddress:172.16.0.23"
+New-IscsiServerTarget -TargetName lon-svr-vms –InitiatorIds "IPAddress:172.16.0.21","IPAddress:172.16.0.22" # ,"IPAddress:172.16.0.23"
 Get-IscsiServerTarget | Select-Object TargetName, InitiatorIds
 Get-IscsiServerTarget | Select-Object -ExpandProperty InitiatorIds
-Remove-IscsiServerTarget -TargetName lon-svr1 
+Remove-IscsiServerTarget -TargetName lon-svr-vms 
 
-New-IscsiServerTarget -TargetName lon-svr1 `
+New-IscsiServerTarget -TargetName lon-svr-vms `
     –InitiatorIds @( "Iqn:iqn.1991-05.com.microsoft:lon-svr1.adatum.com", 
                      "Iqn:iqn.1991-05.com.microsoft:lon-svr2.adatum.com" )
 
-Add-IscsiVirtualDiskTargetMapping -TargetName lon-svr1 E:\iSCSIVirtualDisks\iSCSIDisk1.vhdx
-Add-IscsiVirtualDiskTargetMapping -TargetName lon-svr1 E:\iSCSIVirtualDisks\iSCSIDisk2.vhdx
-Add-IscsiVirtualDiskTargetMapping -TargetName lon-svr1 E:\iSCSIVirtualDisks\iSCSIDisk3.vhdx
+Add-IscsiVirtualDiskTargetMapping -TargetName lon-svr-vms E:\iSCSIVirtualDisks\iSCSIDisk1.vhdx
+Add-IscsiVirtualDiskTargetMapping -TargetName lon-svr-vms E:\iSCSIVirtualDisks\iSCSIDisk2.vhdx
+Add-IscsiVirtualDiskTargetMapping -TargetName lon-svr-vms E:\iSCSIVirtualDisks\iSCSIDisk3.vhdx
 
 # To add iSNS Initiator(s) to an iSCSI Target:
-Get-IscsiServerTarget -TargetName LON-Svr1 | Set-IscsiServerTarget -InitiatorIds "Iqn:iqn.1991-05.com.microsoft:lon-svr3.adatum.com"
-Get-IscsiServerTarget -TargetName LON-Svr1 | Set-IscsiServerTarget `
-    –InitiatorIds @( "Iqn:iqn.1991-05.com.microsoft:lon-svr2.adatum.com", 
-                     "Iqn:iqn.1991-05.com.microsoft:lon-svr3.adatum.com",
-                     "Iqn:iqn.1991-05.com.microsoft:lon-svr4.adatum.com" )
+Get-IscsiServerTarget -TargetName LON-Svr-vms | Set-IscsiServerTarget -InitiatorIds "Iqn:iqn.1991-05.com.microsoft:lon-svr3.adatum.com"
+Get-IscsiServerTarget -TargetName LON-Svr-vms | Set-IscsiServerTarget `
+    –InitiatorIds @( "Iqn:iqn.1991-05.com.microsoft:lon-svr1.adatum.com", 
+                     "Iqn:iqn.1991-05.com.microsoft:lon-svr2.adatum.com",
+                     "Iqn:iqn.1991-05.com.microsoft:lon-svr3.adatum.com" )
 
 ####
 
